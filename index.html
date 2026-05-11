@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The movie Blog — G2-gist</title>
+<meta name="description" content="A simple movie blog inspired by YNaija's Film Blog: reviews, watchlists, and movie awards coverage." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#" class="logo">G2<span>-gist</span></a>
+      <nav>
+        <ul class="menu">
+          <li><a href="#">Blogs</a></li>
+          <li><a href="#">Reviews</a></li>
+          <li><a href="#">Rankings</a></li>
+          <li><a href="#">Lists</a></li>
+          <li><a href="#">Specials</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+      <button id="searchBtn" class="search-btn" aria-label="Search">🔍</button>
+    </div>
+  </header>
+
+  <section class="page-title container">
+    <h1>The movie Blog</h1>
+  </section>
+
+  <main class="container layout">
+    <section class="posts" id="posts"></section>
+
+    <aside class="sidebar">
+      <div class="widget">
+        <h3>Recent Posts</h3>
+        <ul id="recent"></ul>
+      </div>
+      <div class="widget">
+        <h3>Categories</h3>
+        <div class="tags">
+          <span class="tag">Cover Stories</span>
+          <span class="tag">Deep Dive</span>
+          <span class="tag">Featured</span>
+          <span class="tag">Opinion</span>
+          <span class="tag">Rankings</span>
+          <span class="tag">Reviews</span>
+          <span class="tag">Sponsored</span>
+          <span class="tag">Thinking Through</span>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 - <span id="currentYear"></span> G2-gist movie Blog. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
