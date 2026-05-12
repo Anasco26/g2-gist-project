@@ -11,7 +11,7 @@
   <header class="site-header">
     <div class="container nav">
       <a href="#" class="logo">G2<span>-gist</span></a>
-      <nav>
+      <nav class="nav-menu" id="navMenu">
         <ul class="menu">
           <li><a href="#">Blogs</a></li>
           <li><a href="#">Reviews</a></li>
@@ -21,7 +21,14 @@
           <li><a href="#">Contact</a></li>
         </ul>
       </nav>
-      <button id="searchBtn" class="search-btn" aria-label="Search">🔍</button>
+      <div class="header-controls">
+        <button id="searchBtn" class="search-btn" aria-label="Search">🔍</button>
+        <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </header>
 

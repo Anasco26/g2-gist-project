@@ -96,6 +96,26 @@ document.getElementById('searchBtn').addEventListener('click', () => {
   alert(match.length ? `Found ${match.length} post(s):\n\n` + match.map(m => '• ' + m.title).join('\n') : 'No posts found.');
 });
 
+// Mobile menu toggle
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const navMenu = document.getElementById('navMenu');
+const menuLinks = navMenu.querySelectorAll('a');
+
+mobileMenuBtn.addEventListener('click', () => {
+  mobileMenuBtn.classList.toggle('active');
+  navMenu.classList.toggle('active');
+  mobileMenuBtn.setAttribute('aria-expanded', mobileMenuBtn.classList.contains('active'));
+});
+
+// Close menu when a link is clicked
+menuLinks.forEach(link => {
+  link.addEventListener('click', () => {
+    mobileMenuBtn.classList.remove('active');
+    navMenu.classList.remove('active');
+    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+  });
+});
+
 renderPosts();
 renderRecent();
 
