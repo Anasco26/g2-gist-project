@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log In — G2-gist</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="logo">G2<span>-gist</span></a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="page-title">
+      <h1>Log In</h1>
+      <p>Access your account to save favorites and manage subscriptions.</p>
+    </section>
+
+    <section class="content">
+      <form id="authForm" action="#" method="post">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+
+        <button type="submit">Log In</button>
+      </form>
+
+      <p class="note">Note, this page requires real authentication from the backend.</p>
+
+      <p style="margin-top:12px;">Don't have an account? <a href="newsletter.html">Sign up</a></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 G2-gist movie Blog.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('authForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('This is a demo login — no real authentication is performed.');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

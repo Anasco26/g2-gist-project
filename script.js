@@ -59,25 +59,42 @@ const recent = [
 
 function renderPosts() {
   const grid = document.getElementById('posts');
-  grid.innerHTML = posts.map(p => `
+  if (!grid) return;
+  const section = (window.PAGE_SECTION || '').toLowerCase();
+  let list = posts;
+  if (section) {
+    list = posts.filter(p => {
+      const cat = (p.category || '').toLowerCase();
+      const tags = (p.tags || []).join(' ').toLowerCase();
+      return cat.includes(section) || tags.includes(section) || p.title.toLowerCase().includes(section);
+    });
+  }
+  if (!list.length) {
+    grid.innerHTML = '<p>No posts found in this section.</p>';
+    return;
+  }
+  grid.innerHTML = list.map(p => {
+    const originalIndex = posts.indexOf(p);
+    return `
     <article class="card">
       <img class="thumb" src="${p.image}" alt="${p.title}" loading="lazy" />
       <div class="body">
         <div class="date">${p.date}</div>
-        <h2><a href="#">${p.title}</a></h2>
+        <h2><a href="post.html?id=${originalIndex}">${p.title}</a></h2>
         <p>${p.excerpt}</p>
-        <a href="#" class="read-more">Read More →</a>
+        <a href="post.html?id=${originalIndex}" class="read-more">Read More →</a>
         <div class="meta">
           <span class="cat">${p.category}</span>
           &nbsp;·&nbsp; ${p.tags.join(', ')}
         </div>
       </div>
     </article>
-  `).join('');
+  `}).join('');
 }
 
 function renderRecent() {
   const ul = document.getElementById('recent');
+  if (!ul) return;
   ul.innerHTML = recent.map(r => `
     <li>
       <img src="${r.img}" alt="" />
@@ -86,35 +103,39 @@ function renderRecent() {
   `).join('');
 }
 
-document.getElementById('searchBtn').addEventListener('click', () => {
-  const q = prompt('Search the Film Blog:');
-  if (!q) return;
-  const match = posts.filter(p =>
-    p.title.toLowerCase().includes(q.toLowerCase()) ||
-    p.excerpt.toLowerCase().includes(q.toLowerCase())
-  );
-  alert(match.length ? `Found ${match.length} post(s):\n\n` + match.map(m => '• ' + m.title).join('\n') : 'No posts found.');
-});
+const searchBtn = document.getElementById('searchBtn');
+if (searchBtn) {
+  searchBtn.addEventListener('click', () => {
+    const q = prompt('Search the Film Blog:');
+    if (!q) return;
+    const match = posts.filter(p =>
+      p.title.toLowerCase().includes(q.toLowerCase()) ||
+      p.excerpt.toLowerCase().includes(q.toLowerCase())
+    );
+    alert(match.length ? `Found ${match.length} post(s):\\n\\n` + match.map(m => '• ' + m.title).join('\\n') : 'No posts found.');
+  });
+}
 
 // Mobile menu toggle
 const mobileMenuBtn = document.getElementById('mobileMenuBtn');
 const navMenu = document.getElementById('navMenu');
-const menuLinks = navMenu.querySelectorAll('a');
-
-mobileMenuBtn.addEventListener('click', () => {
-  mobileMenuBtn.classList.toggle('active');
-  navMenu.classList.toggle('active');
-  mobileMenuBtn.setAttribute('aria-expanded', mobileMenuBtn.classList.contains('active'));
-});
-
-// Close menu when a link is clicked
-menuLinks.forEach(link => {
-  link.addEventListener('click', () => {
-    mobileMenuBtn.classList.remove('active');
-    navMenu.classList.remove('active');
-    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+if (mobileMenuBtn && navMenu) {
+  mobileMenuBtn.addEventListener('click', () => {
+    mobileMenuBtn.classList.toggle('active');
+    navMenu.classList.toggle('active');
+    mobileMenuBtn.setAttribute('aria-expanded', mobileMenuBtn.classList.contains('active'));
   });
-});
+
+  // Close menu when a link is clicked
+  const menuLinks = navMenu.querySelectorAll('a');
+  menuLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenuBtn.classList.remove('active');
+      navMenu.classList.remove('active');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    });
+  });
+}
 
 renderPosts();
 renderRecent();
