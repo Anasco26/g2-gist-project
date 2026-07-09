@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import AdminNav from "../components/AdminNav";
 import Pagination from "../components/Pagination";
+import ConfirmModal from "../components/ConfirmModal";
 
 const PER_PAGE = 10;
 
@@ -17,6 +18,8 @@ export default function AdminDashboard() {
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     if (!user || user.role !== "ADMIN") {
@@ -49,23 +52,34 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (slug, title) => {
-    if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    setConfirmDelete({ slug, title });
+  };
+
+  const confirmDeletePost = async () => {
+    if (!confirmDelete) return;
     try {
-      await api.delete(`/blogs/${slug}`);
+      await api.delete(`/blogs/${confirmDelete.slug}`);
       showToast("Post deleted.", "success");
       fetchPosts(page);
     } catch (err) {
       showToast(err.message, "error");
     }
+    setConfirmDelete(null);
   };
 
   const q = search.toLowerCase();
-  const filtered = blogs.filter((b) =>
-    !q ||
-    b.title.toLowerCase().includes(q) ||
-    b.category?.name?.toLowerCase().includes(q) ||
-    b.author?.name?.toLowerCase().includes(q),
-  );
+  const filtered = blogs.filter((b) => {
+    const matchSearch =
+      !q ||
+      b.title.toLowerCase().includes(q) ||
+      b.category?.name?.toLowerCase().includes(q) ||
+      b.author?.name?.toLowerCase().includes(q);
+    const matchStatus =
+      statusFilter === "all" ||
+      (statusFilter === "published" && b.published) ||
+      (statusFilter === "draft" && !b.published);
+    return matchSearch && matchStatus;
+  });
 
   if (loading && !blogs.length) return <main className="container"><div className="loading">Loading...</div></main>;
 
@@ -86,8 +100,19 @@ export default function AdminDashboard() {
       <section className="admin-filters">
         <div className="admin-search">
           <span className="admin-search-icon">🔍</span>
-          <input type="text" placeholder="Search loaded posts..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input type="text" placeholder="Search by title, category, or author..." value={search} onChange={(e) => setSearch(e.target.value)} />
           {search && <button className="admin-search-clear" onClick={() => setSearch("")}>✕</button>}
+        </div>
+        <div className="admin-status-filter">
+          <button className={statusFilter === "all" ? "active" : ""} onClick={() => setStatusFilter("all")}>
+            All ({pagination?.total || 0})
+          </button>
+          <button className={statusFilter === "published" ? "active" : ""} onClick={() => setStatusFilter("published")}>
+            Published ({blogs.filter((b) => b.published).length})
+          </button>
+          <button className={statusFilter === "draft" ? "active" : ""} onClick={() => setStatusFilter("draft")}>
+            Drafts ({blogs.filter((b) => !b.published).length})
+          </button>
         </div>
       </section>
 
@@ -144,6 +169,15 @@ export default function AdminDashboard() {
             <Pagination page={page} totalPages={pagination.totalPages} onPage={fetchPosts} />
           )}
         </>
+      )}
+      {confirmDelete && (
+        <ConfirmModal
+          open
+          title="Delete post?"
+          message={`Delete "${confirmDelete.title}"? This cannot be undone.`}
+          onConfirm={confirmDeletePost}
+          onCancel={() => setConfirmDelete(null)}
+        />
       )}
     </main>
   );

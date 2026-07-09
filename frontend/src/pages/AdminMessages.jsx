@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import AdminNav from "../components/AdminNav";
 import Pagination from "../components/Pagination";
+import ConfirmModal from "../components/ConfirmModal";
 
 const PER_PAGE = 10;
 
@@ -19,6 +20,7 @@ export default function AdminMessages() {
   const [search, setSearch] = useState("");
   const [readFilter, setReadFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     if (!user || user.role !== "ADMIN") {
@@ -67,14 +69,19 @@ export default function AdminMessages() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this message?")) return;
+    setConfirmDelete(id);
+  };
+
+  const confirmDeleteMessage = async () => {
+    if (!confirmDelete) return;
     try {
-      await api.delete(`/contact/${id}`);
+      await api.delete(`/contact/${confirmDelete}`);
       showToast("Message deleted.", "success");
       fetchMessages(page);
     } catch (err) {
       showToast(err.message, "error");
     }
+    setConfirmDelete(null);
   };
 
   if (loading && !messages.length) return <main className="container"><div className="loading">Loading...</div></main>;
@@ -154,6 +161,15 @@ export default function AdminMessages() {
             <Pagination page={page} totalPages={pagination.totalPages} onPage={(p) => fetchMessages(p)} />
           )}
         </>
+      )}
+      {confirmDelete && (
+        <ConfirmModal
+          open
+          title="Delete message?"
+          message="Delete this message? This cannot be undone."
+          onConfirm={confirmDeleteMessage}
+          onCancel={() => setConfirmDelete(null)}
+        />
       )}
     </main>
   );
