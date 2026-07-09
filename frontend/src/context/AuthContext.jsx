@@ -8,6 +8,12 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const handleForceLogout = () => setUserState(null);
+    window.addEventListener("auth:logout", handleForceLogout);
+    return () => window.removeEventListener("auth:logout", handleForceLogout);
+  }, []);
+
+  useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
       apiFetchMe().then((u) => {

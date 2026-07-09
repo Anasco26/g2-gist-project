@@ -38,6 +38,7 @@ export default function BlogCard({ blog }) {
         </Link>
         <div className="meta">
           <span className="cat">{blog.category?.name || "Uncategorized"}</span>
+          <span className="view-count">👁️ {blog.viewCount || 0}</span>
           <span className="comment-count">
             💬 {blog._count?.comments || 0}
           </span>

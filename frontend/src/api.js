@@ -48,6 +48,12 @@ async function request(path, options = {}) {
   } catch {
     throw new Error(`Server returned non-JSON (${res.status}): ${text.slice(0, 100)}`);
   }
+  if (res.status === 401) {
+    clearAuth();
+    window.dispatchEvent(new CustomEvent("auth:logout"));
+    throw new Error("Session expired. Please log in again.");
+  }
+
   if (!res.ok) {
     throw new Error(data.message || `Request failed (${res.status})`);
   }

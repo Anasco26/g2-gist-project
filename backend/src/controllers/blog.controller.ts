@@ -8,6 +8,9 @@ import {
   deleteBlogComment,
   findBlogById,
   getBlogBySlug,
+  getPopularPosts,
+  getRelatedPosts,
+  incrementViewCount,
   listAllBlogsAdmin,
   listBlogComments,
   listBlogs,
@@ -62,13 +65,21 @@ export const createBlogHandler = asyncHandler(
 );
 
 export const getBlogsHandler = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const blogs = await listBlogs();
+  async (req: Request, res: Response) => {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+    const result = await listBlogs(page, limit);
 
     res.status(200).json({
       status: "success",
-      results: blogs.length,
-      data: { blogs },
+      results: result.blogs.length,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      },
+      data: { blogs: result.blogs },
     });
   },
 );
@@ -212,8 +223,48 @@ export const getBlogByIdHandler = asyncHandler(
 );
 
 export const getAdminBlogsHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+    const result = await listAllBlogsAdmin(page, limit);
+
+    res.status(200).json({
+      status: "success",
+      results: result.blogs.length,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      },
+      data: { blogs: result.blogs },
+    });
+  },
+);
+
+export const trackViewHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    await incrementViewCount(requireParam(req.params.slug, "slug"));
+
+    res.status(200).json({ status: "success" });
+  },
+);
+
+export const getRelatedPostsHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const blogs = await getRelatedPosts(requireParam(req.params.slug, "slug"));
+
+    res.status(200).json({
+      status: "success",
+      results: blogs.length,
+      data: { blogs },
+    });
+  },
+);
+
+export const getPopularPostsHandler = asyncHandler(
   async (_req: Request, res: Response) => {
-    const blogs = await listAllBlogsAdmin();
+    const blogs = await getPopularPosts();
 
     res.status(200).json({
       status: "success",

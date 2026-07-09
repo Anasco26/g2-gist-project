@@ -23,6 +23,7 @@ export const publicBlogSelect = {
   featured: true,
   published: true,
   publishedAt: true,
+  viewCount: true,
   likeCount: true,
   favoriteCount: true,
   createdAt: true,
@@ -269,19 +270,33 @@ export async function createBlog(authorId: string, input: BlogInput) {
   });
 }
 
-export async function listBlogs() {
-  return prisma.blog.findMany({
-    where: { published: true },
-    select: publicBlogSelect,
-    orderBy: { createdAt: "desc" },
-  });
+export async function listBlogs(page = 1, limit = 20) {
+  const skip = (page - 1) * limit;
+  const [blogs, total] = await Promise.all([
+    prisma.blog.findMany({
+      where: { published: true },
+      select: publicBlogSelect,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.blog.count({ where: { published: true } }),
+  ]);
+  return { blogs, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
-export async function listAllBlogsAdmin() {
-  return prisma.blog.findMany({
-    select: publicBlogSelect,
-    orderBy: { createdAt: "desc" },
-  });
+export async function listAllBlogsAdmin(page = 1, limit = 20) {
+  const skip = (page - 1) * limit;
+  const [blogs, total] = await Promise.all([
+    prisma.blog.findMany({
+      select: publicBlogSelect,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.blog.count(),
+  ]);
+  return { blogs, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getBlogBySlug(slug: string) {
@@ -577,6 +592,41 @@ export async function deleteBlogComment(
 
   await prisma.blogComment.delete({
     where: { id: comment.id },
+  });
+}
+
+export async function incrementViewCount(slug: string) {
+  await prisma.blog.update({
+    where: { slug },
+    data: { viewCount: { increment: 1 } },
+  });
+}
+
+export async function getRelatedPosts(slug: string, limit = 4) {
+  const blog = await prisma.blog.findUnique({
+    where: { slug },
+    select: { tagId: true, id: true },
+  });
+  if (!blog || !blog.tagId) return [];
+
+  return prisma.blog.findMany({
+    where: {
+      published: true,
+      tagId: blog.tagId,
+      id: { not: blog.id },
+    },
+    select: publicBlogSelect,
+    take: limit,
+    orderBy: { publishedAt: "desc" },
+  });
+}
+
+export async function getPopularPosts(limit = 4) {
+  return prisma.blog.findMany({
+    where: { published: true },
+    select: publicBlogSelect,
+    orderBy: [{ viewCount: "desc" }, { likeCount: "desc" }],
+    take: limit,
   });
 }
 
