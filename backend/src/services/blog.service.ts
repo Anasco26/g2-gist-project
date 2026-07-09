@@ -337,7 +337,7 @@ export async function getBlogBySlug(slug: string) {
   return {
     ...blog,
     comments: buildCommentTree(
-      comments.map((comment) => ({
+      comments.map((comment): PublicBlogComment => ({
         ...comment,
         replies: [],
       })),
@@ -542,7 +542,7 @@ export async function listBlogComments(slug: string) {
   });
 
   return buildCommentTree(
-    comments.map((comment) => ({
+    comments.map((comment): PublicBlogComment => ({
       ...comment,
       replies: [],
     })),

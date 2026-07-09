@@ -10,7 +10,7 @@
     "start": "node dist/index.js",
     "dev": "nodemon",
     "prisma:generate": "prisma generate",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts"
