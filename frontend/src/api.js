@@ -1,4 +1,6 @@
 const API_BASE = (import.meta.env.VITE_API_URL || "") + "/api/v1";
+let isRefreshing = false;
+let refreshPromise = null;
 
 function getAccessToken() {
   return localStorage.getItem("accessToken");
@@ -28,19 +30,76 @@ export function clearAuth() {
   localStorage.removeItem("user");
 }
 
+async function refreshAccessToken() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.data?.accessToken || null;
+  } catch {
+    return null;
+  }
+}
+
 async function request(path, options = {}) {
   const { method = "GET", body } = options;
   const url = `${API_BASE}${path}`;
   const headers = { "Content-Type": "application/json" };
   const token = getAccessToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(url, {
+  let res = await fetch(url, {
     method,
     headers,
     credentials: "include",
     body: body ? JSON.stringify(body) : undefined,
   });
   if (res.status === 204) return null;
+  if (res.status === 401 && !isRefreshing) {
+    isRefreshing = true;
+    refreshPromise = refreshAccessToken();
+    const newToken = await refreshPromise;
+    isRefreshing = false;
+    refreshPromise = null;
+    if (newToken) {
+      setAccessToken(newToken);
+      headers["Authorization"] = `Bearer ${newToken}`;
+      res = await fetch(url, {
+        method,
+        headers,
+        credentials: "include",
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (res.status === 204) return null;
+    } else {
+      clearAuth();
+      window.dispatchEvent(new CustomEvent("auth:logout"));
+      const text = await res.text();
+      let msg = "Session expired. Please log in again.";
+      try { msg = JSON.parse(text).message || msg; } catch {}
+      throw new Error(msg);
+    }
+  } else if (res.status === 401 && isRefreshing) {
+    const newToken = await refreshPromise;
+    if (newToken) {
+      setAccessToken(newToken);
+      headers["Authorization"] = `Bearer ${newToken}`;
+      res = await fetch(url, {
+        method,
+        headers,
+        credentials: "include",
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (res.status === 204) return null;
+    } else {
+      clearAuth();
+      window.dispatchEvent(new CustomEvent("auth:logout"));
+      throw new Error("Session expired. Please log in again.");
+    }
+  }
   const text = await res.text();
   let data;
   try {
@@ -48,12 +107,6 @@ async function request(path, options = {}) {
   } catch {
     throw new Error(`Server returned non-JSON (${res.status}): ${text.slice(0, 100)}`);
   }
-  if (res.status === 401) {
-    clearAuth();
-    window.dispatchEvent(new CustomEvent("auth:logout"));
-    throw new Error("Session expired. Please log in again.");
-  }
-
   if (!res.ok) {
     throw new Error(data.message || `Request failed (${res.status})`);
   }
