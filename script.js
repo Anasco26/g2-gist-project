@@ -1,144 +1,667 @@
-const posts = [
-  {
-    title: "The Weekend Watchlist | Films & Series To Watch This Weekend",
-    date: "May 8, 2026",
-    category: "The Film Blog",
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80",
-    excerpt: "The weekend is here, and we've curated a blend of action thrillers, comedy, drama, and adventure to keep your weekend fun and entertaining.",
-    tags: ["Animal Farm", "Mortal Kombat", "Netflix"]
-  },
-  {
-    title: "AMVCA 2026: Who Will Go Home With the Best Movie Award?",
-    date: "May 8, 2026",
-    category: "Awards",
-    image: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80",
-    excerpt: "The 2026 AMVCA is two days away. Heavy hitters are nominated in each category — here's our breakdown of the Best Movie Award nominees.",
-    tags: ["AMVCA", "Best Movie", "Nollywood"]
-  },
-  {
-    title: "A Billion Dollars Just Entered the African Film Ecosystem",
-    date: "May 7, 2026",
-    category: "Industry",
-    image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80",
-    excerpt: "The African Film Fund has just announced its biggest commitment yet, promising to reshape production budgets across the continent.",
-    tags: ["Africa", "Film Fund", "Industry"]
-  },
-  {
-    title: "Inside The Heineken House: Where Film Meets Festival Vibes",
-    date: "May 6, 2026",
-    category: "Cover Story",
-    image: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&q=80",
-    excerpt: "We went behind the scenes at this year's Heineken House — a space where premieres, parties, and the loudest film conversations collided.",
-    tags: ["Events", "Festival", "Premieres"]
-  },
-  {
-    title: "Top 5 Nollywood Performances of the Year (So Far)",
-    date: "May 5, 2026",
-    category: "Rankings",
-    image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&q=80",
-    excerpt: "From breakout newcomers to established stars going experimental — these are the performances we cannot stop talking about.",
-    tags: ["Nollywood", "Acting", "Rankings"]
-  },
-  {
-    title: "Why the Streaming Wars Are Reshaping African Cinema",
-    date: "May 4, 2026",
-    category: "Deep Dive",
-    image: "https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800&q=80",
-    excerpt: "Netflix, Showmax, and Prime are battling for African audiences — and creators are the ones rewriting the rules of distribution.",
-    tags: ["Streaming", "Netflix", "Showmax"]
-  }
-];
+const API_BASE = "http://localhost:3000/api/v1";
 
-const recent = [
-  { title: "The AMVCA Red Carpet Is Where Nollywood Shines", img: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=200&q=80" },
-  { title: "Weekend Recap: Stories You May Have Missed", img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=200&q=80" },
-  { title: "Top 5 Stories Of The Day | Lagos Shuts Studios", img: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=200&q=80" },
-  { title: "7 Afrobeats Songs That Were Bigger Than Movies Abroad", img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&q=80" },
-  { title: "8 Lagos Neighborhoods And Their Cinema Personalities", img: "https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=200&q=80" }
-];
+const TOAST_DURATION = 3000;
 
-function renderPosts() {
-  const grid = document.getElementById('posts');
-  if (!grid) return;
-  const section = (window.PAGE_SECTION || '').toLowerCase();
-  let list = posts;
-  if (section) {
-    list = posts.filter(p => {
-      const cat = (p.category || '').toLowerCase();
-      const tags = (p.tags || []).join(' ').toLowerCase();
-      return cat.includes(section) || tags.includes(section) || p.title.toLowerCase().includes(section);
+// ============ API Client ============
+const api = {
+  async request(path, options = {}) {
+    const { method = "GET", body, params } = options;
+    let url = `${API_BASE}${path}`;
+    if (params) {
+      const qs = new URLSearchParams(
+        Object.entries(params).filter(([, v]) => v !== undefined && v !== "")
+      );
+      const qstr = qs.toString();
+      if (qstr) url += `?${qstr}`;
+    }
+    const headers = { "Content-Type": "application/json" };
+    const token = getAccessToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const res = await fetch(url, {
+      method,
+      headers,
+      credentials: "include",
+      body: body ? JSON.stringify(body) : undefined,
     });
+    if (res.status === 204) return null;
+    const data = await res.json();
+    if (!res.ok) {
+      const msg =
+        data.message || data.error || `Request failed with status ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
+  },
+
+  get(path, opts) {
+    return this.get(path, { ...opts, method: "GET" });
+  },
+  post(path, body) {
+    return this.get(path, { method: "POST", body });
+  },
+  patch(path, body) {
+    return this.get(path, { method: "PATCH", body });
+  },
+  delete(path) {
+    return this.get(path, { method: "DELETE" });
+  },
+};
+
+["get", "post", "patch", "delete"].forEach((method) => {
+  const orig = api[method];
+  api[method] = async (path, body) => {
+    const opts = { method: method.toUpperCase() };
+    if (body) opts.body = body;
+    return api.get(path, opts);
+  };
+});
+
+// ============ Auth / Token ============
+function getAccessToken() {
+  return localStorage.getItem("accessToken");
+}
+
+function setAccessToken(token) {
+  if (token) localStorage.setItem("access_token", token);
+  else localStorage.removeItem("access_token");
+}
+
+function getUser() {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
   }
-  if (!list.length) {
-    grid.innerHTML = '<p>No posts found in this section.</p>';
+}
+
+function setUser(user) {
+  if (user) localStorage.setItem("user", JSON.stringify(user));
+  else localStorage.removeItem("user");
+}
+
+async function refreshAccessToken() {
+  try {
+    const data = await api.get("/auth/refresh", { method: "POST" });
+    if (data?.data?.accessToken) {
+      setAccessToken(data.data.accessToken);
+      setUser(data.data.user);
+      return data.data.accessToken;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+async function fetchMe() {
+  try {
+    const data = await api.get("/auth/me");
+    if (data?.data?.user) {
+      setUser(data.data.user);
+      return data.data.user;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+async function logoutUser() {
+  try {
+    await api.get("/auth/logout", { method: "POST" });
+  } catch {
+  }
+  setAccessToken(null);
+  setUser(null);
+  window.location.href = "index.html";
+}
+
+// ============ Toast Notifications ============
+let toastContainer;
+
+function ensureToastContainer() {
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.className = "toast-container";
+    document.body.appendChild(toastContainer);
+  }
+  return toastContainer;
+}
+
+function showToast(message, type = "info") {
+  const container = ensureToastContainer();
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.3s";
+    setTimeout(() => toast.remove(), 300);
+  }, TOAST_DURATION);
+}
+
+// ============ Header / Auth UI ============
+function renderHeader() {
+  const headerControls = document.querySelector(".header-controls");
+  if (!headerControls) return;
+  const user = getUser();
+  const token = getAccessToken();
+  const authHtml = token && user
+    ? `
+    <div class="user-menu">
+      <button class="user-btn-trigger" id="userBtnTrigger">
+        <span>${user.name || user.username || user.email}</span>
+      </button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+          <strong>${user.name || "User"}</strong>
+          <span>${user.email}</span>
+        </div>
+        <div class="dropdown-divider"></div>
+        <a href="index.html">Home</a>
+        <button id="logoutBtn">Log Out</button>
+      </div>
+    </div>`
+    : `<button class="auth-btn" onclick="window.location.href='auth.html'">Log In</button>`;
+  const searchHtml = headerControls.querySelector(".search-btn")
+    ? ""
+    : `<button id="searchBtn" class="search-btn" aria-label="Search"><span class="search-icon">&#x1F50D;</span></button>`;
+  headerControls.innerHTML = searchHtml + authBtn;
+  bindSearchBtn();
+  bindUserDropdown();
+  bindLogout();
+}
+
+function bindSearchBtn() {
+  const btn = document.getElementById("searchBtn");
+  if (btn) {
+    btn.addEventListener("click", openSearch);
+  }
+}
+
+function bindUserDropdown() {
+  const trigger = document.getElementById("userBtnTrigger");
+  const dropdown = document.getElementById("userDropdown");
+  if (trigger && dropdown) {
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("open");
+    });
+    document.addEventListener("click", () => dropdown.classList.remove("open"));
+  }
+}
+
+function bindLogout() {
+  const btn = document.getElementById("logoutBtn");
+  if (btn) btn.addEventListener("click", logoutUser);
+}
+
+// ============ Search ============
+function openSearch() {
+  const existing = document.querySelector(".search-overlay");
+  if (existing) {
+    existing.classList.add("open");
+    existing.querySelector("input")?.focus();
     return;
   }
-  grid.innerHTML = list.map(p => {
-    const originalIndex = posts.indexOf(p);
-    return `
+  const overlay = document.createElement("div");
+  overlay.className = "search-overlay open";
+  overlay.innerHTML = `
+    <div class="search-modal">
+      <input type="text" id="searchInput" placeholder="Search posts..." autofocus />
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  `;
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.classList.remove("open");
+  });
+  document.body.appendChild(overlay);
+  const input = overlay.querySelector("#searchInput");
+  const results = overlay.querySelector("#searchResults");
+  let debounceTimer;
+  input.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    const q = input.value.trim();
+    if (q.length < 2) {
+      results.innerHTML = "";
+      return;
+    }
+    debounceTimer = setTimeout(async () => {
+      results.innerHTML = '<div class="loading">Searching...</div>';
+      try {
+        const data = await api.get("/blogs");
+        const blogs = data?.data?.blogs || [];
+        const matches = blogs.filter(
+          (b) =>
+            b.title.toLowerCase().includes(q.toLowerCase()) ||
+            (b.content || "").toLowerCase().includes(q.toLowerCase()) ||
+            (b.category?.name || "").toLowerCase().includes(q.toLowerCase())
+        );
+        if (matches.length === 0) {
+          results.innerHTML = '<div class="no-results">No posts found.</div>';
+        } else {
+          results.innerHTML = matches
+            .slice(0, 8)
+            .map(
+              (b) => `
+            <a class="search-result-item" href="post.html?slug=${b.slug}">
+              <div class="result-title">${b.title}</div>
+              <div class="result-category">${b.category?.name || ""}</div>
+            </a>
+          `
+            )
+            .join("");
+        }
+      } catch {
+        results.innerHTML = '<div class="no-results">Search failed.</div>';
+      }
+    }, 300);
+  });
+  document.addEventListener("keydown", function escKey(e) {
+    if (e.key === "Escape") {
+      overlay.classList.remove("open");
+      document.removeEventListener("keydown", escKey);
+    }
+  });
+}
+
+// ============ Blog Rendering ============
+function renderBlogCard(blog) {
+  const date = blog.publishedAt
+    ? new Date(blog.publishedAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
+  return `
     <article class="card">
-      <img class="thumb" src="${p.image}" alt="${p.title}" loading="lazy" />
       <div class="body">
-        <div class="date">${p.date}</div>
-        <h2><a href="post.html?id=${originalIndex}">${p.title}</a></h2>
-        <p>${p.excerpt}</p>
-        <a href="post.html?id=${originalIndex}" class="read-more">Read More →</a>
+        <div class="date">${date}</div>
+        <h2><a href="post.html?slug=${blog.slug}">${blog.title}</a></h2>
+        <p>${stripHtml(blog.content).slice(0, 150)}...</p>
+        <a href="post.html?slug=${blog.slug}" class="read-more">Read More →</a>
         <div class="meta">
-          <span class="cat">${p.category}</span>
-          &nbsp;·&nbsp; ${p.tags.join(', ')}
+          <span class="cat">${blog.category?.name || "Uncategorized"}</span>
+          <span class="comment-count">💬 ${blog._count?.comments || 0}</span>
+          <span class="like-count">❤️ ${blog.likeCount || 0}</span>
         </div>
       </div>
     </article>
-  `}).join('');
+  `;
 }
 
-function renderRecent() {
-  const ul = document.getElementById('recent');
+function renderRecentPosts(recent) {
+  const ul = document.getElementById("recent");
   if (!ul) return;
-  ul.innerHTML = recent.map(r => `
+  if (!recent || recent.length === 0) {
+    ul.innerHTML = "<li style='padding: 14px; color: var(--muted);'>No posts yet.</li>";
+    return;
+  }
+  ul.innerHTML = recent
+    .slice(0, 5)
+    .map(
+      (b) => `
     <li>
-      <img src="${r.img}" alt="" />
-      <a href="#">${r.title}</a>
+      <a href="post.html?slug=${b.slug}">${b.title}</a>
     </li>
-  `).join('');
+  `
+    )
+    .join("");
 }
 
-const searchBtn = document.getElementById('searchBtn');
-if (searchBtn) {
-  searchBtn.addEventListener('click', () => {
-    const q = prompt('Search the Film Blog:');
-    if (!q) return;
-    const match = posts.filter(p =>
-      p.title.toLowerCase().includes(q.toLowerCase()) ||
-      p.excerpt.toLowerCase().includes(q.toLowerCase())
-    );
-    alert(match.length ? `Found ${match.length} post(s):\\n\\n` + match.map(m => '• ' + m.title).join('\\n') : 'No posts found.');
-  });
-}
-
-// Mobile menu toggle
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const navMenu = document.getElementById('navMenu');
-if (mobileMenuBtn && navMenu) {
-  mobileMenuBtn.addEventListener('click', () => {
-    mobileMenuBtn.classList.toggle('active');
-    navMenu.classList.toggle('active');
-    mobileMenuBtn.setAttribute('aria-expanded', mobileMenuBtn.classList.contains('active'));
-  });
-
-  // Close menu when a link is clicked
-  const menuLinks = navMenu.querySelectorAll('a');
-  menuLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenuBtn.classList.remove('active');
-      navMenu.classList.remove('active');
-      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+function renderAllCategories(categories) {
+  const container = document.getElementById("categoryTags");
+  if (!container) return;
+  if (!categories || categories.length === 0) return;
+  container.innerHTML = categories
+    .map(
+      (c) => `<span class="tag" data-category="${c.name}">${c.name}</span>`
+    )
+    .join("");
+  container.querySelectorAll(".tag").forEach((tag) => {
+    tag.addEventListener("click", () => {
+      const current = window.location.pathname.split("/").pop();
+      if (current === "index.html" || current === "") {
+        filterByCategory(tag.dataset.category);
+      }
     });
   });
 }
 
-renderPosts();
-renderRecent();
+function filterByCategory(category) {
+  const tags = document.querySelectorAll("#categoryTags .tag");
+  tags.forEach((t) => t.classList.remove("active"));
+  const target = document.querySelector(`#categoryTags .tag[data-category="${category}"]`);
+  if (target) target.classList.add("active");
+  const cards = document.querySelectorAll(".card");
+  cards.forEach((card) => {
+    const cat = card.querySelector(".cat")?.textContent || "";
+    card.style.display =
+      cat.toLowerCase() === category.toLowerCase() ? "" : "none";
+  });
+}
 
-// Set the current year in the footer
-document.getElementById('currentYear').textContent = new Date().getFullYear();
+function stripHtml(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
+// ============ Main Page Load ============
+async function loadHomePage() {
+  const grid = document.getElementById("posts");
+  if (!grid) return;
+  grid.innerHTML = '<div class="loading">Loading posts...</div>';
+  try {
+    const data = await api.get("/blogs");
+    const blogs = data?.data?.blogs || [];
+    const section = (window.PAGE_SECTION || "").toLowerCase();
+    let filtered = blogs;
+    if (section) {
+      filtered = blogs.filter((b) => {
+        const cat = (b.category?.name || "").toLowerCase();
+        const tag = (b.tag?.name || "").toLowerCase();
+        return cat.includes(section) || tag.includes(section);
+      });
+    }
+    if (filtered.length === 0) {
+      grid.innerHTML = "<p style='padding: 20px; color: var(--muted);'>No posts found.</p>";
+    } else {
+      grid.innerHTML = filtered.map(renderBlogPosts).join("");
+    }
+    renderRecentPosts(blogs);
+    const cats = [];
+    blogs.forEach((b) => {
+      if (b.category && !cats.find((c) => c.name === b.category.name)) {
+        cats.push(b.category);
+      }
+    });
+    renderAllCategories(cats);
+    renderHeader();
+    bindMobileMenu();
+    const yearEl = document.getElementById("currentYear");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  } catch (err) {
+    grid.innerHTML = `<div class="error-state"><p>Failed to load posts: ${err.message}</p><button onclick="loadHomePage()">Retry</button></div>`;
+  }
+}
+
+// ============ Single Post Page ============
+async function loadPostPage() {
+  const container = document.getElementById("post");
+  if (!container) return;
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get("slug");
+  if (!slug) {
+    container.innerHTML = "<p>Post not found.</p>";
+    return;
+  }
+  container.innerHTML = '<div class="loading">Loading post...</div>';
+  try {
+    const data = await api.get(`/blogs/${slug}`);
+    const blog = data?.data?.blog;
+    if (!blog) throw new Error("Post not found");
+    const date = blog.publishedAt
+      ? new Date(blog.publishedAt).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "";
+    container.innerHTML = `
+      <article class="post-detail-hero">
+        <div class="post-detail-header">
+          <h1>${blog.title}</h1>
+          <div class="post-detail-meta">
+            <span>${date}</span>
+            <strong>${blog.category?.name || "Uncategorized"}</strong>
+            ${blog.tag ? `<span>#${blog.tag.name}</span>` : ""}
+            <span>By ${blog.author?.name || blog.author?.username || "Unknown"}</span>
+          </div>
+          <div class="post-detail-stats">
+            <button id="likeBtn" class="${blog.isLiked ? "liked" : ""}">
+              ❤️ <span id="likeCount">${blog.likeCount || 0}</span>
+            </button>
+            <button id="favBtn" class="${blog.isFavorited ? "favorited" : ""}">
+              ⭐ <span id="favCount">${blog.favoriteCount || 0}</span>
+            </button>
+            <button class="secondary">💬 <span>${blog._count?.comments || 0}</span></button>
+          </div>
+        </div>
+      </article>
+      <div class="post-detail-content">
+        ${blog.content}
+      </div>
+      <div class="comments-section">
+        <h3>Comments (${blog._count?.comments || 0})</h3>
+        <div id="commentsContainer">${renderComments(blog.comments || [])}</div>
+        <div class="comment-form" id="commentFormContainer">
+          <div class="reply-indicator" id="replyIndicator" style="display:none;">
+            Replying to <strong id="replyToName"></strong>
+            <button id="cancelReplyBtn">✕</button>
+          </div>
+          <textarea id="commentInput" placeholder="Write a comment..." rows="3"></textarea>
+          <button id="submitCommentBtn">Post Comment</button>
+        </div>
+      </div>
+    `;
+    bindPostActions(slug, blog);
+    bindComments(slug);
+    renderHeader();
+    bindMobileMenu();
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+  } catch (err) {
+    container.innerHTML = `<div class="error-state"><p>${err.message}</p><a href="index.html" class="read-more">← Back to Home</a></div>`;
+  }
+}
+
+function renderComments(comments, depth = 0) {
+  if (!comments || comments.length === 0) return "";
+  return comments
+    .map((c) => {
+      const date = new Date(c.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      const initial = (c.author?.name || c.author?.username || "A")[0].toUpperCase();
+      const repliesHtml = c.replies?.length
+        ? `<div class="comment-replies">${renderComments(c.replies, depth + 1)}</div>`
+        : "";
+      return `
+      <div class="comment" data-comment-id="${c.id}">
+        <div class="comment-author">
+          <div class="comment-avatar">${initial}</div>
+          <div>
+            <div class="comment-author-name">${c.author?.name || c.author?.username || "Anonymous"}</div>
+            <div class="comment-date">${date}</div>
+          </div>
+        </div>
+        <div class="comment-content">${escapeHtml(c.content)}</div>
+        ${depth < 2 ? `<button class="comment-reply-btn" data-parent-id="${c.id}" data-author-name="${c.author?.name || c.author?.username || 'Anonymous'}">Reply</button>` : ""}
+        ${repliesHtml}
+      </div>
+    `;
+    })
+    .join("");
+}
+
+function bindComments(slug) {
+  let parentId = null;
+  const replyIndicator = document.getElementById("replyIndicator");
+  const replyToName = document.getElementById("replyToName");
+  const cancelReplyBtn = document.getElementById("cancelReplyBtn");
+  document.querySelectorAll(".comment-reply-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      parentId = btn.dataset.parentId;
+      replyToName.textContent = btn.dataset.authorName;
+      replyIndicator.style.display = "flex";
+      document.getElementById("commentText").focus();
+    });
+  });
+  if (cancelReplyBtn) {
+    cancelReplyBtn.addEventListener("click", () => {
+      parentId = null;
+      replyIndicator.style.display = "none";
+    });
+  }
+  document.getElementById("submitCommentBtn")?.addEventListener("click", async () => {
+    const text = document.getElementById("commentText");
+    const content = text.value.trim();
+    if (!content) return showToast("Please write a comment.", "error");
+    const user = getUser();
+    if (!user || !getAccessToken()) {
+      showToast("Please log in to comment.", "error");
+      return;
+    }
+    try {
+      const body = { content };
+      if (parentId) body.parentId = parentId;
+      await api.post(`/blogs/${slug}/comments`, body);
+      text.value = "";
+      parentId = null;
+      replyIndicator.style.display = "none";
+      showToast("Comment posted!", "success");
+      setTimeout(() => loadPostPage(), 500);
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  });
+}
+
+function bindPostActions(slug) {
+  const likeBtn = document.getElementById("likeBtn");
+  const favBtn = document.getElementById("favBtn");
+  const user = getUser();
+  const token = getAccessToken();
+  if (likeBtn && token) {
+    likeBtn.addEventListener("click", async () => {
+      try {
+        const data = await api.post(`/blogs/${slug}/likes`);
+        const liked = data?.data?.liked;
+        const count = data?.data?.blog?.likeCount;
+        likeBtn.classList.toggle("liked", liked);
+        document.getElementById("likeCount").textContent = count;
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    });
+  }
+  if (favBtn && token) {
+    favBtn.addEventListener("click", async () => {
+      try {
+        const data = await api.post(`/blogs/${slug}/favorites`);
+        const favorited = data?.data?.favorited;
+        const count = data?.data?.blog?.favoriteCount;
+        favBtn.classList.toggle("favorited", favorited);
+        document.getElementById("favCount").textContent = count;
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    });
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ============ Auth Pages ============
+async function handleAuth() {
+  const form = document.getElementById("authForm");
+  if (!form) return;
+  const mode = form.dataset.mode || "login";
+  const errorEl = document.getElementById("authError");
+  const successEl = document.getElementById("authSuccess");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl.classList.remove("show");
+    successEl.classList.remove("show");
+    const submitBtn = form.querySelector("button[type='submit']");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Loading...";
+    try {
+      let data;
+      if (mode === "login") {
+        const identifier = document.getElementById("email")?.value || document.getElementById("identifier")?.value;
+        const password = document.getElementById("password").value;
+        data = await api.post("/auth/login", { identifier, password });
+      } else if (mode === "register") {
+        const email = document.getElementById("regEmail").value;
+        const password = document.getElementById("regPassword").value;
+        const confirmPassword = document.getElementById("regConfirmPassword").value;
+        const name = document.getElementById("regName")?.value;
+        const username = document.getElementById("regUsername")?.value;
+        data = await api.post("/auth/register", {
+          email,
+          password,
+          confirmPassword,
+          ...(name ? { name } : {}),
+          ...(username ? { username } : {}),
+        });
+      }
+      if (data?.data?.accessToken) {
+        setAccessToken(data.data.accessToken);
+        setUser(data.data.user);
+        showToast("Logged in successfully!", "success");
+        setTimeout(() => (window.location.href = "index.html"), 500);
+      }
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.classList.add("show");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === "login" ? "Log In" : "Create Account";
+    }
+  });
+}
+
+// ============ Mobile Menu ============
+function bindMobileMenu() {
+  const mobileBtn = document.getElementById("mobileMenuBtn");
+  const navMenu = document.getElementById("navMenu");
+  if (mobileBtn && navMenu) {
+    mobileBtn.addEventListener("click", () => {
+      mobileBtn.classList.toggle("active");
+      navMenu.classList.toggle("active");
+      mobileBtn.setAttribute(
+        "aria-expanded",
+        mobileBtn.classList.contains("active")
+      );
+    });
+    navMenu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        mobileBtn.classList.remove("active");
+        navMenu.classList.remove("active");
+        mobileBtn.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+}
+
+// ============ Init ============
+document.addEventListener("DOMContentLoaded", async () => {
+  const currentPage = window.location.pathname.split("/").pop() || "index.html";
+  if (currentPage === "auth.html") {
+    await handleAuth();
+    renderHeader();
+    bindMobileMenu();
+  } else if (currentPage === "post.html") {
+    await loadPostPage();
+  } else if (
+    ["reviews.html", "rankings.html", "lists.html", "specials.html"].includes(
+      currentPage
+    )
+  ) {
+    await loadHomePage();
+  } else {
+    await loadHomePage();
+  }
+});
+
+document.getElementById("currentYear").textContent = new Date().getFullYear();
