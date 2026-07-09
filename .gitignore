@@ -3,3 +3,8 @@ dist/
 log/
 node_modules/
 coverage/
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo

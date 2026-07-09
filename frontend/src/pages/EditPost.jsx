@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { api, getUser } from "../api";
 import { useToast } from "../context/ToastContext";
+import RichEditor from "../components/RichEditor";
 
 export default function EditPost() {
   const { slug } = useParams();
@@ -96,8 +97,8 @@ export default function EditPost() {
           <label htmlFor="tagCaption">Tag caption</label>
           <input id="tagCaption" type="text" value={tagCaption} onChange={(e) => setTagCaption(e.target.value)} placeholder="e.g. Nollywood, Netflix picks" />
 
-          <label htmlFor="content">Content</label>
-          <textarea id="content" rows="12" value={content} onChange={(e) => setContent(e.target.value)} required />
+          <label>Content</label>
+          <RichEditor value={content} onChange={setContent} />
 
           <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
             <button type="submit" disabled={submitting}>

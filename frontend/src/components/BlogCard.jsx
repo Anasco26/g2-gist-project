@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
 
+function extractFirstImage(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  const img = div.querySelector("img");
+  return img?.getAttribute("src") || null;
+}
+
 export default function BlogCard({ blog }) {
   const date = blog.publishedAt
     ? new Date(blog.publishedAt).toLocaleDateString("en-US", {
@@ -15,8 +22,11 @@ export default function BlogCard({ blog }) {
     return div.textContent || div.innerText || "";
   };
 
+  const image = extractFirstImage(blog.content);
+
   return (
     <article className="card">
+      {image && <img src={image} alt="" className="thumb" />}
       <div className="body">
         <div className="date">{date}</div>
         <h2>

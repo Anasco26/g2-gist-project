@@ -972,3 +972,53 @@ button.secondary:hover { background: #f5f5f5; }
     margin-top: 6px;
   }
 }
+
+/* Rich text editor */
+.rich-editor-wrapper {
+  margin-bottom: 16px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.rich-editor-wrapper:focus-within {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-light);
+}
+
+.rich-editor-wrapper .ql-toolbar {
+  border: none;
+  border-bottom: 1px solid #e5e5e5;
+  border-radius: 0;
+  background: #fafafa;
+}
+
+.rich-editor-wrapper .ql-container {
+  border: none;
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  min-height: 260px;
+}
+
+.rich-editor-wrapper .ql-editor {
+  min-height: 260px;
+  line-height: 1.8;
+}
+
+.rich-editor-wrapper .ql-editor h1,
+.rich-editor-wrapper .ql-editor h2,
+.rich-editor-wrapper .ql-editor h3 {
+  font-weight: 800;
+  margin-bottom: 0.5em;
+}
+
+.rich-editor-wrapper .ql-editor p {
+  margin-bottom: 1em;
+}
+
+.rich-editor-wrapper .ql-editor ul,
+.rich-editor-wrapper .ql-editor ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}

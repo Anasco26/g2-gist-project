@@ -3,6 +3,13 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { api, getUser } from "../api";
 import { useToast } from "../context/ToastContext";
 
+function extractFirstImage(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  const img = div.querySelector("img");
+  return img?.getAttribute("src") || null;
+}
+
 export default function Post() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -105,6 +112,8 @@ export default function Post() {
 
   const canModify = user && user.id === blog.author?.id;
 
+  const heroImage = extractFirstImage(blog.content);
+
   const renderComments = (comments, depth = 0) => {
     if (!comments || comments.length === 0) return "";
     return comments.map((c) => {
@@ -138,6 +147,7 @@ export default function Post() {
   return (
     <main className="container">
       <article className="post-detail-hero">
+        {heroImage && <img src={heroImage} alt="" />}
         <div className="post-detail-header">
           {canModify && (
             <div className="post-admin-bar">

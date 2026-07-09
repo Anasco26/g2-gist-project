@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../api";
 import { useToast } from "../context/ToastContext";
+import RichEditor from "../components/RichEditor";
 
 export default function CreatePost() {
   const [title, setTitle] = useState("");
@@ -63,8 +64,8 @@ export default function CreatePost() {
           <label htmlFor="tagCaption">Tag caption (optional)</label>
           <input id="tagCaption" type="text" value={tagCaption} onChange={(e) => setTagCaption(e.target.value)} placeholder="e.g. Nollywood, Netflix picks" />
 
-          <label htmlFor="content">Content</label>
-          <textarea id="content" rows="12" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write your post content here. HTML is supported." required />
+          <label>Content</label>
+          <RichEditor value={content} onChange={setContent} />
 
           <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
             <button type="submit" disabled={submitting}>

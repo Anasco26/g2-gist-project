@@ -17,7 +17,8 @@ const posts = [
     title: "The Weekend Watchlist | Films & Series To Watch This Weekend",
     category: "Lists",
     tag: { name: "netflix", caption: "Netflix picks" },
-    content: `<p>The weekend is here, and we've curated a blend of action thrillers, comedy, drama, and adventure to keep your weekend fun and entertaining.</p>
+    content: `<img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80" alt="Weekend watchlist" />
+<p>The weekend is here, and we've curated a blend of action thrillers, comedy, drama, and adventure to keep your weekend fun and entertaining.</p>
 <p>Whether you're in the mood for a gripping crime saga or a light-hearted comedy, this week's lineup has something for everyone. From the latest Netflix originals to hidden gems on streaming platforms, we've got you covered.</p>
 <p>Our top pick this weekend is the highly anticipated series "Animal Farm" — a modern reimagining that has critics raving. Pair it with the new Mortal Kombat animated feature for a perfect double feature.</p>
 <h3>Must-Watch This Weekend</h3>
@@ -32,7 +33,8 @@ const posts = [
     title: "AMVCA 2026: Who Will Go Home With the Best Movie Award?",
     category: "Rankings",
     tag: { name: "amvca", caption: "AMVCA Awards" },
-    content: `<p>The 2026 AMVCA is two days away. Heavy hitters are nominated in each category — here's our breakdown of the Best Movie Award nominees.</p>
+    content: `<img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&q=80" alt="AMVCA awards" />
+<p>The 2026 AMVCA is two days away. Heavy hitters are nominated in each category — here's our breakdown of the Best Movie Award nominees.</p>
 <p>This year's race is one of the tightest in recent memory, with five exceptional films vying for the top prize. From intimate character studies to sweeping epics, the nominees showcase the incredible depth of talent in African cinema.</p>
 <h2>The Nominees</h2>
 <ul>
@@ -47,7 +49,8 @@ const posts = [
     title: "A Billion Dollars Just Entered the African Film Ecosystem",
     category: "Deep Dive",
     tag: { name: "industry", caption: "Film Industry" },
-    content: `<p>The African Film Fund has just announced its biggest commitment yet, promising to reshape production budgets across the continent.</p>
+    content: `<img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=80" alt="Film industry investment" />
+<p>The African Film Fund has just announced its biggest commitment yet, promising to reshape production budgets across the continent.</p>
 <p>In a landmark announcement, the African Film Fund revealed a $1 billion commitment to film production across the continent over the next five years. This represents the single largest investment in African cinema history.</p>
 <p>The fund will support projects in 15 countries, with a focus on nurturing local talent, building infrastructure, and creating sustainable production ecosystems. Industry insiders are calling it a watershed moment for African storytelling.</p>
 <h2>What This Means for Filmmakers</h2>
@@ -57,7 +60,8 @@ const posts = [
     title: "Inside The Heineken House: Where Film Meets Festival Vibes",
     category: "Cover Story",
     tag: { name: "events", caption: "Events & Festivals" },
-    content: `<p>We went behind the scenes at this year's Heineken House — a space where premieres, parties, and the loudest film conversations collided.</p>
+    content: `<img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80" alt="Heineken House event" />
+<p>We went behind the scenes at this year's Heineken House — a space where premieres, parties, and the loudest film conversations collided.</p>
 <p>The Heineken House has become one of the most anticipated experiences during film festival season. Combining the energy of a music festival with the glamour of a film premiere, it's where industry power players and film lovers converge.</p>
 <p>This year's edition featured exclusive screenings of unreleased films, live podcast recordings with top directors, and surprise musical performances that kept the crowd buzzing well into the night.</p>`,
   },
@@ -65,7 +69,8 @@ const posts = [
     title: "Top 5 Nollywood Performances of the Year (So Far)",
     category: "Rankings",
     tag: { name: "nollywood", caption: "Nollywood" },
-    content: `<p>From breakout newcomers to established stars going experimental — these are the performances we cannot stop talking about.</p>
+    content: `<img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80" alt="Nollywood performances" />
+<p>From breakout newcomers to established stars going experimental — these are the performances we cannot stop talking about.</p>
 <p>Nollywood has delivered some truly remarkable performances in 2026. Our critics have watched hundreds of films to bring you the five performances that have defined the year so far.</p>
 <ol>
 <li><strong>Chioma Akpotha</strong> in "The Silent Echo" — A career-defining turn</li>
@@ -79,7 +84,8 @@ const posts = [
     title: "Why the Streaming Wars Are Reshaping African Cinema",
     category: "Deep Dive",
     tag: { name: "streaming", caption: "Streaming" },
-    content: `<p>Netflix, Showmax, and Prime are battling for African audiences — and creators are the ones rewriting the rules of distribution.</p>
+    content: `<img src="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800&q=80" alt="Streaming platforms" />
+<p>Netflix, Showmax, and Prime are battling for African audiences — and creators are the ones rewriting the rules of distribution.</p>
 <p>The streaming revolution has fundamentally altered the landscape of African cinema. With global platforms competing for market share, African filmmakers have unprecedented access to international audiences.</p>
 <p>Netflix's investment in Nigerian content has grown by 200% since 2023, while Showmax continues to dominate the local market with exclusive Nollywood releases. Meanwhile, Amazon Prime Video is quietly building a slate of original African productions that could shake up the status quo.</p>
 <h2>The Creator's Perspective</h2>
