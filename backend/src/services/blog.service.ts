@@ -285,16 +285,39 @@ export async function listBlogs(page = 1, limit = 20) {
   return { blogs, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
-export async function listAllBlogsAdmin(page = 1, limit = 20) {
+export async function listAllBlogsAdmin(
+  page = 1,
+  limit = 20,
+  search = "",
+  status: "all" | "published" | "draft" = "all",
+) {
   const skip = (page - 1) * limit;
+  const where: Prisma.BlogWhereInput = {};
+
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { category: { name: { contains: search, mode: "insensitive" } } },
+      { author: { name: { contains: search, mode: "insensitive" } } },
+      { author: { username: { contains: search, mode: "insensitive" } } },
+    ];
+  }
+
+  if (status === "published") {
+    where.published = true;
+  } else if (status === "draft") {
+    where.published = false;
+  }
+
   const [blogs, total] = await Promise.all([
     prisma.blog.findMany({
+      where,
       select: publicBlogSelect,
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
     }),
-    prisma.blog.count(),
+    prisma.blog.count({ where }),
   ]);
   return { blogs, total, page, limit, totalPages: Math.ceil(total / limit) };
 }

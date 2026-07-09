@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [confirmDelete, setConfirmDelete] = useState(null);
 
@@ -29,9 +30,13 @@ export default function AdminDashboard() {
     fetchPosts(1);
   }, []);
 
-  const fetchPosts = (p) => {
+  const fetchPosts = useCallback((p, s = search, st = statusFilter) => {
     setLoading(true);
-    api.get(`/blogs/admin?page=${p}&limit=${PER_PAGE}`)
+    const params = new URLSearchParams({ page: String(p), limit: String(PER_PAGE) });
+    if (s) params.set("search", s);
+    if (st !== "all") params.set("status", st);
+
+    api.get(`/blogs/admin?${params}`)
       .then((data) => {
         setBlogs(data?.data?.blogs || []);
         setPagination(data?.pagination || null);
@@ -39,6 +44,17 @@ export default function AdminDashboard() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+  }, [search, statusFilter]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    fetchPosts(1, searchInput, statusFilter);
+  };
+
+  const handleFilter = (st) => {
+    setStatusFilter(st);
+    fetchPosts(1, search, st);
   };
 
   const handlePublish = async (slug, currentlyPublished) => {
@@ -67,20 +83,6 @@ export default function AdminDashboard() {
     setConfirmDelete(null);
   };
 
-  const q = search.toLowerCase();
-  const filtered = blogs.filter((b) => {
-    const matchSearch =
-      !q ||
-      b.title.toLowerCase().includes(q) ||
-      b.category?.name?.toLowerCase().includes(q) ||
-      b.author?.name?.toLowerCase().includes(q);
-    const matchStatus =
-      statusFilter === "all" ||
-      (statusFilter === "published" && b.published) ||
-      (statusFilter === "draft" && !b.published);
-    return matchSearch && matchStatus;
-  });
-
   if (loading && !blogs.length) return <main className="container"><div className="loading">Loading...</div></main>;
 
   return (
@@ -98,25 +100,32 @@ export default function AdminDashboard() {
       <AdminNav />
 
       <section className="admin-filters">
-        <div className="admin-search">
-          <span className="admin-search-icon">🔍</span>
-          <input type="text" placeholder="Search by title, category, or author..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          {search && <button className="admin-search-clear" onClick={() => setSearch("")}>✕</button>}
-        </div>
         <div className="admin-status-filter">
-          <button className={statusFilter === "all" ? "active" : ""} onClick={() => setStatusFilter("all")}>
+          <button className={statusFilter === "all" ? "active" : ""} onClick={() => handleFilter("all")}>
             All ({pagination?.total || 0})
           </button>
-          <button className={statusFilter === "published" ? "active" : ""} onClick={() => setStatusFilter("published")}>
-            Published ({blogs.filter((b) => b.published).length})
+          <button className={statusFilter === "published" ? "active" : ""} onClick={() => handleFilter("published")}>
+            Published
           </button>
-          <button className={statusFilter === "draft" ? "active" : ""} onClick={() => setStatusFilter("draft")}>
-            Drafts ({blogs.filter((b) => !b.published).length})
+          <button className={statusFilter === "draft" ? "active" : ""} onClick={() => handleFilter("draft")}>
+            Drafts
           </button>
         </div>
+        <form className="admin-search" onSubmit={handleSearch}>
+          <span className="admin-search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by title, category, or author..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          {searchInput && (
+            <button type="button" className="admin-search-clear" onClick={() => { setSearchInput(""); setSearch(""); fetchPosts(1, "", statusFilter); }}>✕</button>
+          )}
+        </form>
       </section>
 
-      {filtered.length === 0 ? (
+      {blogs.length === 0 ? (
         <p style={{ color: "var(--muted)", padding: "32px 0", textAlign: "center" }}>
           {search ? "No posts match." : "No posts yet."}
         </p>
@@ -129,7 +138,7 @@ export default function AdminDashboard() {
               <span className="col-date">Date</span>
               <span className="col-actions">Actions</span>
             </div>
-            {filtered.map((b) => (
+            {blogs.map((b) => (
               <div key={b.id} className="admin-table-row">
                 <span className="col-title">
                   <Link to={`/post/${b.slug}`} className="admin-post-title">{b.title}</Link>
@@ -166,7 +175,7 @@ export default function AdminDashboard() {
             ))}
           </div>
           {pagination && pagination.totalPages > 1 && (
-            <Pagination page={page} totalPages={pagination.totalPages} onPage={fetchPosts} />
+            <Pagination page={page} totalPages={pagination.totalPages} onPage={(p) => fetchPosts(p)} />
           )}
         </>
       )}

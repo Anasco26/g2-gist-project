@@ -226,7 +226,9 @@ export const getAdminBlogsHandler = asyncHandler(
   async (req: Request, res: Response) => {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
-    const result = await listAllBlogsAdmin(page, limit);
+    const search = String(req.query.search || "");
+    const status = (req.query.status as string) || "all";
+    const result = await listAllBlogsAdmin(page, limit, search, status as "all" | "published" | "draft");
 
     res.status(200).json({
       status: "success",

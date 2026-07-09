@@ -21,6 +21,7 @@ export default function AdminMessages() {
   const [readFilter, setReadFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [selectedMessage, setSelectedMessage] = useState(null);
 
   useEffect(() => {
     if (!user || user.role !== "ADMIN") {
@@ -63,6 +64,9 @@ export default function AdminMessages() {
       setMessages((prev) =>
         prev.map((m) => (m.id === id ? { ...m, isRead: true } : m)),
       );
+      if (selectedMessage?.id === id) {
+        setSelectedMessage((prev) => prev ? { ...prev, isRead: true } : null);
+      }
     } catch (err) {
       showToast(err.message, "error");
     }
@@ -77,11 +81,19 @@ export default function AdminMessages() {
     try {
       await api.delete(`/contact/${confirmDelete}`);
       showToast("Message deleted.", "success");
+      setSelectedMessage(null);
       fetchMessages(page);
     } catch (err) {
       showToast(err.message, "error");
     }
     setConfirmDelete(null);
+  };
+
+  const openMessage = (m) => {
+    setSelectedMessage(m);
+    if (!m.isRead) {
+      handleMarkRead(m.id);
+    }
   };
 
   if (loading && !messages.length) return <main className="container"><div className="loading">Loading...</div></main>;
@@ -96,6 +108,17 @@ export default function AdminMessages() {
       <AdminNav />
 
       <section className="admin-filters">
+        <div className="admin-status-filter">
+          <button className={readFilter === "all" ? "active" : ""} onClick={() => handleFilter("all")}>
+            All{pagination ? ` (${pagination.total})` : ""}
+          </button>
+          <button className={readFilter === "unread" ? "active" : ""} onClick={() => handleFilter("unread")}>
+            Unread
+          </button>
+          <button className={readFilter === "read" ? "active" : ""} onClick={() => handleFilter("read")}>
+            Read
+          </button>
+        </div>
         <form className="admin-search" onSubmit={handleSearch}>
           <span className="admin-search-icon">🔍</span>
           <input
@@ -108,17 +131,6 @@ export default function AdminMessages() {
             <button type="button" className="admin-search-clear" onClick={() => { setSearchInput(""); setSearch(""); fetchMessages(1, "", readFilter); }}>✕</button>
           )}
         </form>
-        <div className="admin-status-filter">
-          <button className={readFilter === "all" ? "active" : ""} onClick={() => handleFilter("all")}>
-            All{pagination ? ` (${pagination.total})` : ""}
-          </button>
-          <button className={readFilter === "unread" ? "active" : ""} onClick={() => handleFilter("unread")}>
-            Unread
-          </button>
-          <button className={readFilter === "read" ? "active" : ""} onClick={() => handleFilter("read")}>
-            Read
-          </button>
-        </div>
       </section>
 
       {messages.length === 0 ? (
@@ -129,7 +141,14 @@ export default function AdminMessages() {
         <>
           <div className="message-list">
             {messages.map((m) => (
-              <div key={m.id} className={`message-card ${!m.isRead ? "unread" : ""}`}>
+              <div
+                key={m.id}
+                className={`message-card ${!m.isRead ? "unread" : ""}`}
+                onClick={() => openMessage(m)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter") openMessage(m); }}
+              >
                 <div className="message-head">
                   <div className="message-sender">
                     <span className="message-name">{m.name}</span>
@@ -143,8 +162,8 @@ export default function AdminMessages() {
                     })}
                   </div>
                 </div>
-                <div className="message-body">{m.message}</div>
-                <div className="message-actions">
+                <div className="message-body-preview">{m.message}</div>
+                <div className="message-actions" onClick={(e) => e.stopPropagation()}>
                   {!m.isRead && (
                     <button className="admin-btn admin-btn-publish" onClick={() => handleMarkRead(m.id)}>
                       Mark Read
@@ -162,6 +181,38 @@ export default function AdminMessages() {
           )}
         </>
       )}
+
+      {selectedMessage && (
+        <div className="confirm-overlay" onClick={() => setSelectedMessage(null)}>
+          <div className="message-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="message-detail-close" onClick={() => setSelectedMessage(null)}>✕</button>
+            <div className="message-detail-header">
+              <div className="message-detail-sender">
+                <span className="message-detail-name">{selectedMessage.name}</span>
+                <span className="message-detail-email">{selectedMessage.email}</span>
+              </div>
+              <div className="message-detail-date">
+                {new Date(selectedMessage.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric", month: "long", day: "numeric",
+                  hour: "2-digit", minute: "2-digit",
+                })}
+              </div>
+            </div>
+            <div className="message-detail-body">{selectedMessage.message}</div>
+            <div className="message-detail-actions">
+              {!selectedMessage.isRead && (
+                <button className="admin-btn admin-btn-publish" onClick={() => handleMarkRead(selectedMessage.id)}>
+                  Mark Read
+                </button>
+              )}
+              <button className="admin-btn admin-btn-delete" onClick={() => handleDelete(selectedMessage.id)}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmDelete && (
         <ConfirmModal
           open
