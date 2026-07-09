@@ -270,19 +270,33 @@ export async function createBlog(authorId: string, input: BlogInput) {
   });
 }
 
-export async function listBlogs() {
-  return prisma.blog.findMany({
-    where: { published: true },
-    select: publicBlogSelect,
-    orderBy: { createdAt: "desc" },
-  });
+export async function listBlogs(page = 1, limit = 20) {
+  const skip = (page - 1) * limit;
+  const [blogs, total] = await Promise.all([
+    prisma.blog.findMany({
+      where: { published: true },
+      select: publicBlogSelect,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.blog.count({ where: { published: true } }),
+  ]);
+  return { blogs, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
-export async function listAllBlogsAdmin() {
-  return prisma.blog.findMany({
-    select: publicBlogSelect,
-    orderBy: { createdAt: "desc" },
-  });
+export async function listAllBlogsAdmin(page = 1, limit = 20) {
+  const skip = (page - 1) * limit;
+  const [blogs, total] = await Promise.all([
+    prisma.blog.findMany({
+      select: publicBlogSelect,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.blog.count(),
+  ]);
+  return { blogs, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getBlogBySlug(slug: string) {

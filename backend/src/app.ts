@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.routes";
 import blogRoutes from "./routes/blog.routes";
 import userRoutes from "./routes/user.routes";
 import uploadRoutes from "./routes/upload.routes";
+import contactRoutes from "./routes/contact.routes";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 import logger, { morganStream } from "./utils/logger";
 import config from "./config";
@@ -63,6 +64,7 @@ app.use("/api/v1/auth", authLimiter, authRoutes);
 app.use("/api/v1/blogs", blogRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/upload", uploadRoutes);
+app.use("/api/v1/contact", contactRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

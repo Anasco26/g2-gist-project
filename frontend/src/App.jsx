@@ -9,6 +9,7 @@ import Post from "./pages/Post";
 import CreatePost from "./pages/CreatePost";
 import EditPost from "./pages/EditPost";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminMessages from "./pages/AdminMessages";
 import Auth from "./pages/Auth";
 import Contact from "./pages/Contact";
 import Newsletter from "./pages/Newsletter";
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/post/:slug" element={<Post />} />
             <Route path="/post/:slug/edit" element={<ProtectedRoute><EditPost /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/messages" element={<ProtectedRoute><AdminMessages /></ProtectedRoute>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/newsletter" element={<Newsletter />} />

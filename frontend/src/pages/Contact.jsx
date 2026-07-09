@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api } from "../api";
 import { useToast } from "../context/ToastContext";
 
 export default function Contact() {
@@ -8,16 +9,20 @@ export default function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      await api.post("/contact", { name, email, message });
       showToast("Thanks for reaching out! We'll get back to you.", "success");
       setName("");
       setEmail("");
       setMessage("");
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
       setSubmitting(false);
-    }, 500);
+    }
   };
 
   return (
