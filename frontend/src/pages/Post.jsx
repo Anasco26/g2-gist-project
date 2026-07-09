@@ -166,9 +166,10 @@ export default function Post() {
   };
 
   return (
-    <main className="container">
+    <>
       <article className="post-detail-hero">
         {heroImage && <img src={heroImage} alt="" />}
+        <div className="post-detail-overlay" />
         <div className="post-detail-header">
           {canModify && (
             <div className="post-admin-bar">
@@ -176,31 +177,36 @@ export default function Post() {
               <button className="btn-delete" onClick={handleDelete}>🗑️ Delete</button>
             </div>
           )}
-          <h1>{blog.title}</h1>
-          <div className="post-detail-meta">
-            <span>{date}</span>
-            <strong>{blog.category?.name || "Uncategorized"}</strong>
-            {blog.tag && <span>#{blog.tag.name}</span>}
-            <span>By {blog.author?.name || blog.author?.username || "Unknown"}</span>
-          </div>
-          <div className="post-detail-stats">
-            <button onClick={handleLike}>
-              ❤️ <span>{blog.likeCount || 0}</span>
-            </button>
-            <button onClick={handleFavorite}>
-              ⭐ <span>{blog.favoriteCount || 0}</span>
-            </button>
-            <button className="secondary">
-              💬 <span>{blog._count?.comments || 0}</span>
-            </button>
-            <button className="secondary">
-              👁️ <span>{blog.viewCount || 0}</span>
-            </button>
+          <div className="post-detail-header-content">
+            <div className="post-detail-meta">
+              <strong>{blog.category?.name || "Uncategorized"}</strong>
+              {blog.tag && <span>#{blog.tag.name}</span>}
+              <span>{date}</span>
+            </div>
+            <h1>{blog.title}</h1>
+            <div className="post-detail-byline">
+              <span>By {blog.author?.name || blog.author?.username || "Unknown"}</span>
+            </div>
+            <div className="post-detail-stats">
+              <button onClick={handleLike}>
+                ❤️ <span>{blog.likeCount || 0}</span>
+              </button>
+              <button onClick={handleFavorite}>
+                ⭐ <span>{blog.favoriteCount || 0}</span>
+              </button>
+              <button className="secondary">
+                💬 <span>{blog._count?.comments || 0}</span>
+              </button>
+              <button className="secondary">
+                👁️ <span>{blog.viewCount || 0}</span>
+              </button>
+            </div>
           </div>
         </div>
       </article>
 
-      <div className="post-detail-content" dangerouslySetInnerHTML={{ __html: blog.content }} />
+      <main className="container">
+        <div className="post-detail-content" dangerouslySetInnerHTML={{ __html: blog.content }} />
 
       {relatedPosts.length > 0 && (
         <section className="related-posts">
@@ -246,6 +252,7 @@ export default function Post() {
           <button type="submit">Post Comment</button>
         </form>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
