@@ -83,6 +83,7 @@ model Blog {
   featured      Boolean        @default(false)
   published     Boolean        @default(true)
   publishedAt   DateTime?
+  viewCount     Int            @default(0)
   likeCount     Int            @default(0)
   favoriteCount Int            @default(0)
   createdAt     DateTime       @default(now())
@@ -103,6 +104,7 @@ model Blog {
   @@index([featured])
   @@index([published])
   @@index([publishedAt])
+  @@index([viewCount])
 }
 
 model BlogComment {

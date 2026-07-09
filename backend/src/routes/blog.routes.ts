@@ -9,8 +9,11 @@ import {
   getBlogBySlugHandler,
   getBlogCommentsHandler,
   getBlogsHandler,
+  getPopularPostsHandler,
+  getRelatedPostsHandler,
   toggleBlogFavoriteHandler,
   toggleBlogLikeHandler,
+  trackViewHandler,
   updateBlogCommentHandler,
   updateBlogHandler,
 } from "../controllers/blog.controller";
@@ -28,6 +31,7 @@ import {
 const router = Router();
 
 router.get("/", getBlogsHandler);
+router.get("/popular", getPopularPostsHandler);
 router.get(
   "/admin",
   protect,
@@ -44,6 +48,16 @@ router.get(
   "/:slug",
   validateRequest({ params: blogSlugParamsSchema }),
   getBlogBySlugHandler,
+);
+router.get(
+  "/:slug/related",
+  validateRequest({ params: blogSlugParamsSchema }),
+  getRelatedPostsHandler,
+);
+router.post(
+  "/:slug/view",
+  validateRequest({ params: blogSlugParamsSchema }),
+  trackViewHandler,
 );
 router.patch(
   "/:slug",

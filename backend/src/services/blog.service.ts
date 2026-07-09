@@ -23,6 +23,7 @@ export const publicBlogSelect = {
   featured: true,
   published: true,
   publishedAt: true,
+  viewCount: true,
   likeCount: true,
   favoriteCount: true,
   createdAt: true,
@@ -577,6 +578,41 @@ export async function deleteBlogComment(
 
   await prisma.blogComment.delete({
     where: { id: comment.id },
+  });
+}
+
+export async function incrementViewCount(slug: string) {
+  await prisma.blog.update({
+    where: { slug },
+    data: { viewCount: { increment: 1 } },
+  });
+}
+
+export async function getRelatedPosts(slug: string, limit = 4) {
+  const blog = await prisma.blog.findUnique({
+    where: { slug },
+    select: { tagId: true, id: true },
+  });
+  if (!blog || !blog.tagId) return [];
+
+  return prisma.blog.findMany({
+    where: {
+      published: true,
+      tagId: blog.tagId,
+      id: { not: blog.id },
+    },
+    select: publicBlogSelect,
+    take: limit,
+    orderBy: { publishedAt: "desc" },
+  });
+}
+
+export async function getPopularPosts(limit = 4) {
+  return prisma.blog.findMany({
+    where: { published: true },
+    select: publicBlogSelect,
+    orderBy: [{ viewCount: "desc" }, { likeCount: "desc" }],
+    take: limit,
   });
 }
 

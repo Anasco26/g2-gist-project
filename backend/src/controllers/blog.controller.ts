@@ -8,6 +8,9 @@ import {
   deleteBlogComment,
   findBlogById,
   getBlogBySlug,
+  getPopularPosts,
+  getRelatedPosts,
+  incrementViewCount,
   listAllBlogsAdmin,
   listBlogComments,
   listBlogs,
@@ -214,6 +217,38 @@ export const getBlogByIdHandler = asyncHandler(
 export const getAdminBlogsHandler = asyncHandler(
   async (_req: Request, res: Response) => {
     const blogs = await listAllBlogsAdmin();
+
+    res.status(200).json({
+      status: "success",
+      results: blogs.length,
+      data: { blogs },
+    });
+  },
+);
+
+export const trackViewHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    await incrementViewCount(requireParam(req.params.slug, "slug"));
+
+    res.status(200).json({ status: "success" });
+  },
+);
+
+export const getRelatedPostsHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const blogs = await getRelatedPosts(requireParam(req.params.slug, "slug"));
+
+    res.status(200).json({
+      status: "success",
+      results: blogs.length,
+      data: { blogs },
+    });
+  },
+);
+
+export const getPopularPostsHandler = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const blogs = await getPopularPosts();
 
     res.status(200).json({
       status: "success",

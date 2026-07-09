@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { api, getUser } from "../api";
 import { useToast } from "../context/ToastContext";
+import SmallBlogCard from "../components/SmallBlogCard";
 
 function extractFirstImage(html) {
   const div = document.createElement("div");
@@ -18,6 +19,8 @@ export default function Post() {
   const [error, setError] = useState(null);
   const [commentText, setCommentText] = useState("");
   const [replyTo, setReplyTo] = useState(null);
+  const [relatedPosts, setRelatedPosts] = useState([]);
+  const [popularPosts, setPopularPosts] = useState([]);
   const user = getUser();
   const { showToast } = useToast();
 
@@ -37,7 +40,25 @@ export default function Post() {
 
   useEffect(() => {
     fetchPost();
+    api.get("/blogs/popular").then((data) => {
+      setPopularPosts(data?.data?.blogs || []);
+    }).catch(() => {});
   }, [slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+    api.post(`/blogs/${slug}/view`).catch(() => {});
+  }, [slug]);
+
+  useEffect(() => {
+    if (!blog?.tag?.name) {
+      setRelatedPosts([]);
+      return;
+    }
+    api.get(`/blogs/${slug}/related`).then((data) => {
+      setRelatedPosts(data?.data?.blogs || []);
+    }).catch(() => {});
+  }, [blog?.tag?.name, slug]);
 
   const handleLike = async () => {
     if (!user) return showToast("Please log in to like.", "error");
@@ -172,11 +193,32 @@ export default function Post() {
             <button className="secondary">
               💬 <span>{blog._count?.comments || 0}</span>
             </button>
+            <button className="secondary">
+              👁️ <span>{blog.viewCount || 0}</span>
+            </button>
           </div>
         </div>
       </article>
 
       <div className="post-detail-content" dangerouslySetInnerHTML={{ __html: blog.content }} />
+
+      {relatedPosts.length > 0 && (
+        <section className="related-posts">
+          <h3>Related Posts {blog.tag && <span className="tag-label">#{blog.tag.name}</span>}</h3>
+          <div className="small-card-grid">
+            {relatedPosts.map((p) => <SmallBlogCard key={p.id} blog={p} />)}
+          </div>
+        </section>
+      )}
+
+      {popularPosts.length > 0 && (
+        <section className="popular-posts">
+          <h3>🔥 Popular Posts</h3>
+          <div className="small-card-grid">
+            {popularPosts.map((p) => <SmallBlogCard key={p.id} blog={p} />)}
+          </div>
+        </section>
+      )}
 
       <div className="comments-section">
         <h3>Comments ({blog._count?.comments || 0})</h3>

@@ -59,7 +59,7 @@ const posts = [
   {
     title: "Inside The Heineken House: Where Film Meets Festival Vibes",
     category: "Cover Story",
-    tag: { name: "events", caption: "Events & Festivals" },
+    tag: { name: "industry", caption: "Film Industry" },
     content: `<img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80" alt="Heineken House event" />
 <p>We went behind the scenes at this year's Heineken House — a space where premieres, parties, and the loudest film conversations collided.</p>
 <p>The Heineken House has become one of the most anticipated experiences during film festival season. Combining the energy of a music festival with the glamour of a film premiere, it's where industry power players and film lovers converge.</p>
@@ -166,6 +166,7 @@ async function main() {
         slug,
         published: true,
         publishedAt: new Date(),
+        viewCount: Math.floor(Math.random() * 200) + 20,
         likeCount: Math.floor(Math.random() * 15) + 3,
         favoriteCount: Math.floor(Math.random() * 8) + 1,
         authorId: author.id,
@@ -226,6 +227,7 @@ async function main() {
         slug,
         published: false,
         publishedAt: null,
+        viewCount: 0,
         likeCount: 0,
         favoriteCount: 0,
         authorId: author.id,
