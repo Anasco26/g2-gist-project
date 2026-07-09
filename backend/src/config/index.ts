@@ -26,6 +26,8 @@ const config = {
     access: process.env.COOKIE_NAME_ACCESS || "MovieBlog_access",
     refresh: process.env.COOKIE_NAME_REFRESH || "MovieBlog_refresh",
   },
-  blobReadWriteToken: process.env.BLOB_READ_WRITE_TOKEN || "",
+  supabaseUrl: process.env.SUPABASE_URL || "",
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || "",
+  supabaseBucket: process.env.SUPABASE_BUCKET || "blog-images",
 };
 export default config;
