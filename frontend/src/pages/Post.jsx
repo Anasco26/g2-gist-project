@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { api, getUser } from "../api";
 import { useToast } from "../context/ToastContext";
 import SmallBlogCard from "../components/SmallBlogCard";
+import ConfirmModal from "../components/ConfirmModal";
 
 function extractFirstImage(html) {
   const div = document.createElement("div");
@@ -21,6 +22,7 @@ export default function Post() {
   const [replyTo, setReplyTo] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [popularPosts, setPopularPosts] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const user = getUser();
   const { showToast } = useToast();
 
@@ -87,7 +89,10 @@ export default function Post() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    setConfirmDelete(true);
+  };
+
+  const confirmDeletePost = async () => {
     try {
       await api.delete(`/blogs/${slug}`);
       showToast("Post deleted.", "success");
@@ -95,6 +100,7 @@ export default function Post() {
     } catch (err) {
       showToast(err.message, "error");
     }
+    setConfirmDelete(false);
   };
 
   const handleComment = async (e) => {
@@ -253,6 +259,15 @@ export default function Post() {
         </form>
       </div>
       </main>
+      {confirmDelete && (
+        <ConfirmModal
+          open
+          title="Delete post?"
+          message="Are you sure you want to delete this post? This cannot be undone."
+          onConfirm={confirmDeletePost}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
     </>
   );
 }
