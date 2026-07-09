@@ -33,7 +33,9 @@ const authLimiter = rateLimit({
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(
   cors({
-    origin: true,
+    origin: config.isProduction
+      ? [config.frontendUrl].filter(Boolean)
+      : true,
     credentials: true,
   }),
 );

@@ -14,6 +14,7 @@ const config = {
   port: Number(process.env.PORT || 4000),
   nodeEnv: process.env.NODE_ENV || "development",
   isProduction: process.env.NODE_ENV === "production",
+  frontendUrl: process.env.FRONTEND_URL || "",
   databaseUrl: requireEnv("DATABASE_URL"),
   jwtAccessSecret: requireEnv("JWT_ACCESS_SECRET"),
   jwtRefreshSecret: requireEnv("JWT_REFRESH_SECRET"),
