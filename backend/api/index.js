@@ -1,2 +1,2 @@
-const app = require("../dist/app").default;
+const { default: app } = require("../dist/app");
 module.exports = app;
