@@ -59,9 +59,10 @@ export default function RichEditor({ value, onChange, placeholder = "Write your 
         const formData = new FormData();
         formData.append("image", file);
 
-          const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem("accessToken");
+        const base = import.meta.env.VITE_API_URL || "";
         try {
-          const res = await fetch("/api/v1/upload", {
+          const res = await fetch(`${base}/api/v1/upload`, {
             method: "POST",
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData,

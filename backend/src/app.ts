@@ -48,7 +48,9 @@ app.use(
 );
 app.use(globalLimiter);
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+if (!config.isProduction) {
+  app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+}
 
 app.get("/", (_req, res) => {
   res.status(200).json({
