@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+model User {
+  id              String               @id @default(cuid())
+  email           String               @unique
+  username        String?              @unique
+  name            String?
+  password        String
+  role            Role                 @default(USER)
+  isActive        Boolean              @default(true)
+  isEmailVerified Boolean              @default(false)
+  lastLoginAt     DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  refreshTokens   RefreshToken[]
+  passwordResets  PasswordResetToken[]
+  blogs           Blog[]
+  blogComments    BlogComment[]
+  blogLikes       BlogLike[]
+  blogFavorites   BlogFavorite[]
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  blogs     Blog[]
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  caption   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  blogs     Blog[]
+}
+
+model Blog {
+  id            String         @id @default(cuid())
+  title         String
+  content       String
+  slug          String         @unique
+  featured      Boolean        @default(false)
+  published     Boolean        @default(true)
+  publishedAt   DateTime?
+  likeCount     Int            @default(0)
+  favoriteCount Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  authorId      String
+  categoryId    String
+  tagId         String?
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category      Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  tag           Tag?           @relation(fields: [tagId], references: [id], onDelete: SetNull)
+  comments      BlogComment[]
+  likes         BlogLike[]
+  favorites     BlogFavorite[]
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([tagId])
+  @@index([featured])
+  @@index([published])
+  @@index([publishedAt])
+}
+
+model BlogComment {
+  id        String        @id @default(cuid())
+  content   String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  blogId    String
+  authorId  String
+  parentId  String?
+  blog      Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    BlogComment?  @relation("BlogCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   BlogComment[] @relation("BlogCommentReplies")
+
+  @@index([blogId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model BlogLike {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  blogId    String
+  userId    String
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([blogId, userId])
+  @@index([blogId])
+  @@index([userId])
+}
+
+model BlogFavorite {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  blogId    String
+  userId    String
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([blogId, userId])
+  @@index([blogId])
+  @@index([userId])
+}
