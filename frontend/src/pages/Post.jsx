@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { api, getUser } from "../api";
 import { useToast } from "../context/ToastContext";
 
 export default function Post() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,6 +58,17 @@ export default function Post() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await api.delete(`/blogs/${slug}`);
+      showToast("Post deleted.", "success");
+      navigate("/");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  };
+
   const handleComment = async (e) => {
     e.preventDefault();
     if (!user) return showToast("Please log in to comment.", "error");
@@ -90,6 +102,8 @@ export default function Post() {
         year: "numeric", month: "long", day: "numeric",
       })
     : "";
+
+  const canModify = user && user.id === blog.author?.id;
 
   const renderComments = (comments, depth = 0) => {
     if (!comments || comments.length === 0) return "";
@@ -125,6 +139,12 @@ export default function Post() {
     <main className="container">
       <article className="post-detail-hero">
         <div className="post-detail-header">
+          {canModify && (
+            <div className="post-admin-bar">
+              <Link to={`/post/${slug}/edit`} className="btn-edit">✏️ Edit</Link>
+              <button className="btn-delete" onClick={handleDelete}>🗑️ Delete</button>
+            </div>
+          )}
           <h1>{blog.title}</h1>
           <div className="post-detail-meta">
             <span>{date}</span>

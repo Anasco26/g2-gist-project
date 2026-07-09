@@ -8,6 +8,7 @@ import {
   deleteBlogComment,
   findBlogById,
   getBlogBySlug,
+  listAllBlogsAdmin,
   listBlogComments,
   listBlogs,
   toggleBlogFavorite,
@@ -206,6 +207,18 @@ export const getBlogByIdHandler = asyncHandler(
     res.status(200).json({
       status: "success",
       data: { blog },
+    });
+  },
+);
+
+export const getAdminBlogsHandler = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const blogs = await listAllBlogsAdmin();
+
+    res.status(200).json({
+      status: "success",
+      results: blogs.length,
+      data: { blogs },
     });
   },
 );

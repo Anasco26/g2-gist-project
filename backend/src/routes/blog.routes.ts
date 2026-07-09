@@ -1,9 +1,11 @@
 import { Router } from "express";
+import { Role } from "@prisma/client";
 import {
   addBlogCommentHandler,
   createBlogHandler,
   deleteBlogCommentHandler,
   deleteBlogHandler,
+  getAdminBlogsHandler,
   getBlogBySlugHandler,
   getBlogCommentsHandler,
   getBlogsHandler,
@@ -12,7 +14,7 @@ import {
   updateBlogCommentHandler,
   updateBlogHandler,
 } from "../controllers/blog.controller";
-import { protect } from "../middlewares/auth.middleware";
+import { protect, authorizeRoles } from "../middlewares/auth.middleware";
 import validateRequest from "../middlewares/validate.middleware";
 import {
   blogCommentBodySchema,
@@ -26,6 +28,12 @@ import {
 const router = Router();
 
 router.get("/", getBlogsHandler);
+router.get(
+  "/admin",
+  protect,
+  authorizeRoles(Role.ADMIN, Role.MODERATOR),
+  getAdminBlogsHandler,
+);
 router.post(
   "/",
   protect,

@@ -8,7 +8,9 @@ export type Capability =
   | "user:read-any"
   | "user:manage"
   | "user:role-manage"
-  | "user:delete-any";
+  | "user:delete-any"
+  | "blog:review"
+  | "blog:publish";
 
 export const roleCapabilities: Record<Role, Capability[]> = {
   USER: [
@@ -23,6 +25,7 @@ export const roleCapabilities: Record<Role, Capability[]> = {
     "auth:change-password",
     "auth:logout",
     "user:read-any",
+    "blog:review",
   ],
   ADMIN: [
     "auth:read-own",
@@ -33,6 +36,8 @@ export const roleCapabilities: Record<Role, Capability[]> = {
     "user:manage",
     "user:role-manage",
     "user:delete-any",
+    "blog:review",
+    "blog:publish",
   ],
 };
 

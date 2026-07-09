@@ -79,22 +79,37 @@ export default function Header() {
               <span className="search-icon">🔍</span>
             </button>
             {user ? (
-              <div className="user-menu" ref={dropdownRef}>
-                <button className="user-btn-trigger" onClick={() => setDropdownOpen((o) => !o)}>
-                  <span>{user.name || user.username || user.email}</span>
-                </button>
-                <div className={`user-dropdown ${dropdownOpen ? "open" : ""}`}>
-                  <div className="dropdown-header">
-                    <strong>{user.name || "User"}</strong>
-                    <span>{user.email}</span>
+              <>
+                <Link to="/post/new" className="header-create-btn">+ Create</Link>
+                <div className="user-menu" ref={dropdownRef}>
+                  <button className="user-btn-trigger" onClick={() => setDropdownOpen((o) => !o)}>
+                    <span>{user.name || user.username || user.email}</span>
+                  </button>
+                  <div className={`user-dropdown ${dropdownOpen ? "open" : ""}`}>
+                    <div className="dropdown-header">
+                      <strong>{user.name || "User"}</strong>
+                      <span>{user.email}</span>
+                      <span style={{ fontSize: 11, color: "var(--muted)", display: "block", marginTop: 2 }}>
+                        Role: {user.role}
+                      </span>
+                    </div>
+                    <div className="dropdown-divider" />
+                    <Link to="/post/new" onClick={() => setDropdownOpen(false)}>
+                      ✏️ New Post
+                    </Link>
+                    {user.role === "ADMIN" && (
+                      <Link to="/admin" onClick={() => setDropdownOpen(false)}>
+                        📋 Admin Panel
+                      </Link>
+                    )}
+                    <Link to="/" onClick={() => setDropdownOpen(false)}>
+                      Home
+                    </Link>
+                    <div className="dropdown-divider" />
+                    <button onClick={handleLogout}>Log Out</button>
                   </div>
-                  <div className="dropdown-divider" />
-                  <Link to="/" onClick={() => setDropdownOpen(false)}>
-                    Home
-                  </Link>
-                  <button onClick={handleLogout}>Log Out</button>
                 </div>
-              </div>
+              </>
             ) : (
               <Link to="/auth" className="auth-btn">
                 Log In

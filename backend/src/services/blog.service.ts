@@ -271,6 +271,14 @@ export async function createBlog(authorId: string, input: BlogInput) {
 
 export async function listBlogs() {
   return prisma.blog.findMany({
+    where: { published: true },
+    select: publicBlogSelect,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function listAllBlogsAdmin() {
+  return prisma.blog.findMany({
     select: publicBlogSelect,
     orderBy: { createdAt: "desc" },
   });
