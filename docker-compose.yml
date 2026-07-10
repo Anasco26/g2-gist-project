@@ -5,16 +5,14 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      # Connect to Postgres via the shared transaction-mode pooler (IPv4-only)
-      # DATABASE_URL: "postgresql://postgres.uencoxkskaazkebssoja:CJumYoXvefpCORme@aws-0-eu-west-3.pooler.supabase.com:5432/postgres?pgbouncer=true"
-      DATABASE_URL: "postgresql://neondb_owner:npg_ZXV4HKc9mtWT@ep-lucky-dawn-ai9nzvwc-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-      SUPABASE_URL: "https://uencoxkskaazkebssoja.supabase.co"
-      SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlbmNveGtza2FhemtlYnNzb2phIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Mjk4MDcxMSwiZXhwIjoyMDk4NTU2NzExfQ.tCHrrpSkQNep9OKSl_PZO8Zrr6a0z-ukHY3B3FOdf0A
-      SUPABASE_BUCKET: blog-images
+      DATABASE_URL: ${DATABASE_URL}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      SUPABASE_BUCKET: ${SUPABASE_BUCKET:-blog-images}
       FRONTEND_URL: http://localhost:${FRONTEND_PORT:-3000}
-      JWT_ACCESS_SECRET: pDfiyhUfu/x+jkSsf9A1FioMxZpKNH1ckQYgoZrEhaxLl0WRWPjxa0kBkA3/p85bOtrsg0QVR1W9bKvdJFSf1g==
-      JWT_REFRESH_SECRET: pDfiyhUfu/x+jkSsf9A1FioMxZpKNH1ckQYgoZrEhaxLl0WRWPjxa0kBkA3/p85bOtrsg0QVR1W9bKvdJFSf1g==
-      JWT_RESET_SECRET: pDfiyhUfu/x+jkSsf9A1FioMxZpKNH1ckQYgoZrEhaxLl0WRWPjxa0kBkA3/p85bOtrsg0QVR1W9bKvdJFSf1g==
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_RESET_SECRET: ${JWT_RESET_SECRET}
     ports:
       - "4000:4000"
 
