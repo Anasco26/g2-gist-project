@@ -35,7 +35,7 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(
   cors({
     origin: config.isProduction
-      ? [config.frontendUrl].filter(Boolean)
+      ? config.frontendUrl.split(",").filter(Boolean)
       : true,
     credentials: true,
   }),
