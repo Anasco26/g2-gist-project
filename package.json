@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "workspaces": ["backend", "frontend"],
+  "scripts": {
+    "build": "yarn workspace MovieBlog-api build"
+  }
+}
